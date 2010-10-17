@@ -437,7 +437,7 @@
 					if(self.config.isFileSet) {
 						element.trigger("jPlayer.setButtons", true);
             // load low quality vid
-            document.getElementById('tplayer').loadVideoByUrl(self.config.diag.src, 0, 'small');
+            document.getElementById('tplayer').loadVideoById(self.config.diag.src, 0, 'small');
           }
 				},
 				pause: function(e) {
