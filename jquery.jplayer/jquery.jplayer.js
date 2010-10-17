@@ -70,6 +70,7 @@
 		swfPath: "js",
 		volume: 80,
 		oggSupport: false,
+		youTubeSupport: false,
 		nativeSupport: true,
 		preload: 'none',
 		customCssIds: false,
@@ -414,7 +415,54 @@
 				}
 			};
 
-			if(this.config.usingFlash) {
+			var eventsForYouTube = {
+				setFile: function(e, youTubeId) {
+					try {
+						if(self.config.autobuffer) {
+							element.trigger("jPlayer.load");
+						}
+						self.config.diag.src = youTubeId;
+						self.config.isFileSet = true; 
+						element.trigger("jPlayer.setButtons", false);
+            self.jPlayerOnProgressChange(0, 0, 0, 0, 0);
+					} catch(err) { console.log(err); }
+				},
+				clearFile: function(e) {
+          self._warning('clearFile not supported');
+				},
+				load: function(e) {
+          self._warning('load not supported');
+				},
+				play: function(e) {
+					if(self.config.isFileSet) {
+						element.trigger("jPlayer.setButtons", true);
+            // load low quality vid
+            document.getElementById('tplayer').loadVideoById(self.config.diag.src, 0, 'small');
+          }
+				},
+				pause: function(e) {
+          element.trigger("jPlayer.setButtons", false);
+          document.getElementById('tplayer').pauseVideo();
+				},
+				stop: function(e) {
+				  element.trigger("jPlayer.setButtons", false);
+          document.getElementById('tplayer').stopVideo();
+				},
+				playHead: function(e, p) {
+          document.getElementById('tplayer').playVideo();
+				},
+				playHeadTime: function(e, t) {
+          document.getElementById('tplayer').seekTo(t);
+				},
+				volume: function(e, v) {
+          self._warning('setting to ' + v);
+          //document.getElementById('tplayer').setVolume(v);
+				}
+			};
+
+			if(this.config.youTubeSupport) {
+				$.extend(events, eventsForYouTube);
+      }else if(this.config.usingFlash) {
 				$.extend(events, eventsForFlash);
 			} else {
 				$.extend(events, eventsForHtmlAudio);
@@ -426,6 +474,13 @@
 				this.element.bind(e, events[event]);
 			}
 
+      if(this.config.youTubeSupport){
+        // assume swfobject for now
+        swfobject.embedSWF("http://www.youtube.com/apiplayer?enablejsapi=1&playerapiid=player",
+          "player", "425", "1", "8", null, null, 
+          {allowScriptAccess: "always"}, {id: 'tplayer'}
+        );
+      }
 			if(this.config.usingFlash) {
 				if(this._checkForFlash(8)) {
 					if($.browser.msie) {
@@ -741,7 +796,7 @@
 			}
 		},
 		_alert: function(msg) {
-			alert("jPlayer " + this.config.version + " : id='" + this.config.id +"' : " + msg);
+			console.log("jPlayer " + this.config.version + " : id='" + this.config.id +"' : " + msg);
 		}
 	};
 })(jQuery);
